@@ -90,6 +90,38 @@ router.get("/api/users/getUserRegister", async (req, res) => {
     } catch (error) {
         return res.status(500).json({ success: false, message: "Internal Server Error!" });
     }
-})
+});
+
+// Update User Register Data
+router.put("/api/users/updateUserRegister", async (req, res) => {
+    try {
+        const userRegisterData = req.body;
+        const getUserId = userRegisterData.userId;
+        const findUserId = await User.findOneAndUpdate({ userId: getUserId }, { $set: userRegisterData });
+        if (findUserId) {
+            return res.status(200).json({ success: true, message: "User Register Data Updated Successfully!" });
+        } else {
+            return res.status(404).json({ success: true, message: "User Register Data Not Found!" });
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Delete User Register Data
+router.delete("/api/users/deleteUserRegister", async (req, res) => {
+    try {
+        const userRegisterData = req.body;
+        const getUserId = userRegisterData.userId;
+        const deleteUserData = await User.deleteOne({ userId: getUserId });
+        if (deleteUserData.deletedCount === 1) {
+            return res.status(200).json({ success: true, message: "User Regsiter Data Deleted Successfully!" });
+        } else {
+            return res.status(404).json({ success: false, message: "User Register Data Id Is Not Found!" });
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Internal Server Error!" });
+    }
+});
 
 export default router;
