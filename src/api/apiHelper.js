@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import userRoutes from "../routes/userRouter.js";
 import productItemRoutes from "../routes/productItemsRoutes.js";
+import accountRoutes from "../routes/accountRoutes.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -15,4 +16,5 @@ if (db) {
 export const apiHelper = (app) => {
     app.use(userRoutes);
     app.use(productItemRoutes);
+    app.use(accountRoutes);
 };
