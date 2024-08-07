@@ -7,8 +7,10 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.2",
+    "nodemailer": "^6.9.14",
     "nodemon": "^3.1.4",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "uuidv4": "^6.2.13"
   },
   "name": "ishopbillingbe",
   "version": "1.0.0",
