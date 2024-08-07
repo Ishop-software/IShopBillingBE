@@ -1,5 +1,5 @@
 import express from 'express';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuidv4';
 import { accountDetails } from '../models/AccountDetailsModel.js';
 
 const router = express.Router();
@@ -39,6 +39,35 @@ router.get('/api/users/getAllAccountDetails', async (req, res) => {
         }
     } catch (error) {
         return res.status(500).json({ success: false, message: "Internal Server Error!" });
+    }
+});
+
+router.put('/api/updateAccountDetails', async ( req, res ) => {
+    try {
+        const data = req.body;
+        const accountId = data.accountId;
+        const updateAccountDetails = await accountDetails.findOneAndUpdate({accountId: accountId},{$set:data});
+        if(!updateAccountDetails) {
+            return res.status(404).json({ success: false, message: "data not updated!" });
+        } else {
+            return res.status(200).json({ success: true, message: "data updated successfully!" });
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+router.delete('/api/deleteAccountDetails', async ( req, res ) => {
+    try {
+        const { accountId } = req.body;
+        const deleteAccountDetails = await accountDetails.findOneAndDelete({ accountId: accountId });
+        if(!deleteAccountDetails) {
+            return res.status(404).json({ success: false, message: "data not deleted!" });
+        } else {
+            return res.status(200).json({ success: true, message: "data deleted successfully!" });
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
     }
 });
 
