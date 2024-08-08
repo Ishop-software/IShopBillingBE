@@ -1,11 +1,18 @@
 import express from "express";
+import cron from 'node-cron';
 import bodyParser from "body-parser";
 import cors from "cors";
 import { apiHelper } from "./src/api/apiHelper.js";
+import { createMongoDump } from "./src/utils/helper.js";
 
 const app = express();
 
 const PORT = process.env.PORT;
+
+cron.schedule('0 0 ** 0', () => {
+  console.log('Running weekly mongoDump...');
+  createMongoDump();
+})
 
 // app.use(express.urlencoded());
 app.use(express.json());
