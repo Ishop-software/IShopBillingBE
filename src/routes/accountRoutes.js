@@ -1,6 +1,8 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
+import Twilio from 'twilio/lib/rest/Twilio.js';
 import { accountDetails } from '../models/AccountDetailsModel.js';
+import { createMongoDump } from '../utils/helper.js';
 
 const router = express.Router();
 
@@ -71,5 +73,32 @@ router.delete('/api/deleteAccountDetails', async ( req, res ) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 });
+
+router.post('/api/sendingMessage', async ( req, res ) => {
+    try {
+        const { message, sendMsg, toMobileNo } = req.body;
+            const client = new Twilio(process.env.TWILIO_ACCOUNT_ID,process.env.TWILIO_AUTH_TOKEN);
+
+            const sendMessage = client.messages.create({
+                body: message,
+                from: process.env.FROM_MOB,
+                to: toMobileNo
+            })
+            .then(message => { return res.status(200).json({ success: true, message: message }) })
+            .catch(error => { return res.status(404).json({ success: false, error: error }) })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+router.get('/api/getMongoDump', async ( req, res ) => {
+    try {
+        createMongoDump()
+        .then( message => {return res.status(200).json({ success: true, message: message }) })
+        .catch( error => { return res.status(404).json({ success: false, message: error.message }) })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+})
 
 export default router;
