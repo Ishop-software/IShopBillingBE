@@ -1,5 +1,5 @@
 import express from 'express';
-import { v4 as uuidv4 } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 import { accountDetails } from '../models/AccountDetailsModel.js';
 
 const router = express.Router();
