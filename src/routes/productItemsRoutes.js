@@ -11,7 +11,7 @@ router.post("/api/productitems/addProductItem", async (req, res) => {
         const randomId = uuidv4();
         prdouctDataList["productItemId"] = randomId;
         const CreateProductData = await ProductItem.create(prdouctDataList);
-        return res.status(200).json({ success: true, message: "Product Item Created Successfully!", data: CreateProductData });
+        return res.status(200).json({ success: true, message: "Product Item Created Successfully!", productItemId: CreateProductData.productItemId });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Internal Server Error!" });
     }

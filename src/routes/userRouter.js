@@ -1,5 +1,7 @@
 import express from "express";
 import bcrypt from 'bcryptjs';
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import { User } from "../models/UserModel.js";
 
@@ -33,7 +35,7 @@ router.post("/api/users/userRegister", async (req, res) => {
             const createUserId = year + "" + month + "" + date + "" + hours + "" + minutes + "" + seconds;
             userRegisterData["userId"] = createUserId;
             const createUserData = await User.create(userRegisterData);
-            return res.status(200).json({ success: true, message: "User Registered Successfully!" });
+            return res.status(200).json({ success: true, message: "User Registered Successfully!", userId: createUserData.userId });
         }
     } catch (error) {
         return res.status(500).json({ success: false, message: "Internal Server Error!" });
@@ -54,12 +56,44 @@ router.post("/api/users/userLogin", async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ success: false, message: "Password Not Valid!" });
         }
-        const token = jwt.sign({ email: getUserEmail }, "your_jwt_secret");
-        return res.status(200).json({ success: "true", message: "User Login Successfully!", token: token });
+        const isFirstLogin = findUserLogin;
+        if (findUserLogin.isFirstLogin === true) {
+            const token = jwt.sign({ email: getUserEmail }, "your_jwt_secret");
+            return res.status(200).json({ success: true, message: "User Login Successfully!", token: token });
+        } else if (findUserLogin.isFirstLogin === false) {
+            const randomKey = await crypto.randomBytes(16).toString('hex');
+            findUserLogin["activationkey"] = randomKey;
+            findUserLogin["isFirstLogin"] = true;
+            const transporter = nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                    user: process.env.GMAIL_USER,
+                    pass: process.env.GMAIL_PASS
+                }
+            });
+            const mailOptions = {
+                from: process.env.GMAIL_USER,
+                to: process.env.Admin_Email, 
+                subject: 'Your Login Key',
+                text: `Hello ${findUserLogin.name},\n\nHere is your login key: ${randomKey}\n\nPlease keep this key safe.\n\nThank you,\nYour Company Name`,
+                html: `<p>UserName: ${findUserLogin.name},</p>
+                    <p>${findUserLogin.name} Your Activation Key Is: <strong>${randomKey}</strong></p>
+                    <p>Please keep this key safe.</p>
+                    <p>Your Company Name Is: ${findUserLogin.companyName}</p>`
+            };
+
+            const getEmail = await transporter.sendMail(mailOptions);
+            const createkey = await User.create(findUserLogin);
+            const token = jwt.sign({ email: getUserEmail }, "your_jwt_secret");
+            return res.status(200).json({ success: true, message: "Key Activated Successfully!", activationkey: createkey.activationkey, token: token });
+        } else {
+            return res.status(400).json({ success: false, message: "Error In User Login!" });
+        }
     } catch (error) {
         return res.status(500).json({ success: false, message: "Internal Server Error!" });
     }
 });
+
 
 // GetAll User Data List
 router.get("/api/users/getAllUserRegister", async (req, res) => {
