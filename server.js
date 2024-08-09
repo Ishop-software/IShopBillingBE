@@ -9,7 +9,7 @@ const app = express();
 
 const PORT = process.env.PORT;
 
-cron.schedule('0 0 ** 0', () => {
+cron.schedule('0 0 * * 1', () => {
   console.log('Running weekly mongoDump...');
   createMongoDump();
 })
