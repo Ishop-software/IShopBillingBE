@@ -74,13 +74,13 @@ router.delete('/api/deleteAccountDetails', async ( req, res ) => {
     }
 });
 
-router.post('/api/sendingMessage', async ( req, res ) => {
+router.post('/api/sendingSMS', async ( req, res ) => {
     try {
         const { message, sendMsg, toMobileNo } = req.body;
             const client = new Twilio(process.env.TWILIO_ACCOUNT_ID,process.env.TWILIO_AUTH_TOKEN);
 
             const sendMessage = client.messages.create({
-                body: message,
+                body: `Hi this is sundaresh from Ishop Software Solution \n message: \n ${message} \n address: \n ${sendMsg}`,
                 from: process.env.FROM_MOB,
                 to: toMobileNo
             })
@@ -91,11 +91,28 @@ router.post('/api/sendingMessage', async ( req, res ) => {
     }
 });
 
+router.post('/api/sendingWhatsappMsg', async ( req, res ) => {
+    try {
+        const { message, sendMsg, toMobileNo } = req.body;
+        const client = new Twilio(process.env.TWILIO_ACCOUNT_ID,process.env.TWILIO_AUTH_TOKEN);
+
+        const sendingWhatsappMsg = client.messages.create({
+            body: `Hi this is sundaresh from Ishop Software Solution \n message: \n ${message} \n address: \n ${sendMsg}`,
+            from: `whatsapp:${process.env.FROM_WHATSAPP_MOB}`,
+            to: `whatsapp:${toMobileNo}`
+        })
+        .then(message => { return res.status(200).json({ success: true, message: message.sid }) })
+        .catch(error => console.log(error) )
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+})
+
 router.get('/api/getMongoDump', async ( req, res ) => {
     try {
         createMongoDump()
-        .then( message => {return res.status(200).json({ success: true, message: message }) })
-        .catch( error => { return res.status(404).json({ success: false, message: error.message }) })
+        .then( message => {return res.status(200).json({ success: true, message: "Mongodump was taken successfully." }) })
+        .catch( error => { return res.status(404).json({ success: false, message: "Mongodump hasn't taken." }) })
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
