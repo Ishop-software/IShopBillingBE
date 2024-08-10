@@ -66,7 +66,7 @@ router.post("/api/users/userLogin", async (req, res) => {
                 return res.status(200).json({ success: true, message: "User Login Successfully!", token: token });
             }
         } else if (findUserLogin.isFirstLogin === false) {
-            const randomKey = await crypto.randomBytes(16).toString('hex');
+            const randomKey = crypto.randomBytes(16).toString('hex');
             findUserLogin["activationkey"] = randomKey;
             findUserLogin["isFirstLogin"] = true;
             const transporter = nodemailer.createTransport({
@@ -98,7 +98,6 @@ router.post("/api/users/userLogin", async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal Server Error!" });
     }
 });
-
 
 // GetAll User Data List
 router.get("/api/users/getAllUserRegister", async (req, res) => {
