@@ -35,7 +35,7 @@ router.post("/api/users/userRegister", async (req, res) => {
             const createUserId = year + "" + month + "" + date + "" + hours + "" + minutes + "" + seconds;
             userRegisterData["userId"] = createUserId;
             const createUserData = await User.create(userRegisterData);
-            return res.status(200).json({ success: true, message: "User Registered Successfully!", userId: createUserData.userId });
+            return res.status(200).json({ success: true, message: "User Registered Successfully!", userId: createUserData.userId, isFirstLogin: createUserData.isFirstLogin });
         }
     } catch (error) {
         return res.status(500).json({ success: false, message: "Internal Server Error!" });
