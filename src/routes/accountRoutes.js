@@ -48,7 +48,6 @@ router.put('/api/updateAccountDetails', async ( req, res ) => {
     try {
         const data = req.body;
         const accountId = data.accountId;
-        console.log(accountId)
         const updateAccountDetails = await accountDetails.findOneAndUpdate({accountId: accountId},{$set:data});
         if(!updateAccountDetails) {
             return res.status(404).json({ success: false, message: "data not updated!" });
