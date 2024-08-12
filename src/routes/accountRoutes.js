@@ -31,7 +31,7 @@ router.post('/api/users/createAccount', async ( req, res ) => {
     }
 });
 
-router.get('/api/users/getAllAccountDetails', async (req, res) => {
+router.post('/api/users/getAllAccountDetails', async (req, res) => {
     try {
         const getAllAccountDetails = await accountDetails.find({},{_id: 0, __v: 0});
         if (getAllAccountDetails.length === 0) {

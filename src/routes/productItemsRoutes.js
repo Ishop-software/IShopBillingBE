@@ -18,7 +18,7 @@ router.post("/api/productitems/addProductItem", async (req, res) => {
 });
 
 // Get All Product Item List
-router.get("/api/productitems/getAllProductItems", async (req, res) => {
+router.post("/api/productitems/getAllProductItems", async (req, res) => {
     try {
         const findAllProductItems = await ProductItem.find({});
         if (findAllProductItems) {
@@ -32,7 +32,7 @@ router.get("/api/productitems/getAllProductItems", async (req, res) => {
 });
 
 // Get Product Item
-router.get("/api/productitems/getProductItem", async (req, res) => {
+router.post("/api/productitems/getProductItem", async (req, res) => {
     try {
         const prdouctDataList = req.body;
         const getProductId =  prdouctDataList.productItemId;
