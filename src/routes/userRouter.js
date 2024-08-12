@@ -100,7 +100,7 @@ router.post("/api/users/userLogin", async (req, res) => {
 });
 
 // GetAll User Data List
-router.get("/api/users/getAllUserRegister", async (req, res) => {
+router.post("/api/users/getAllUserRegister", async (req, res) => {
     try {
         const findUserList = await User.find({});
         if (findUserList) {
@@ -114,7 +114,7 @@ router.get("/api/users/getAllUserRegister", async (req, res) => {
 });
 
 // GetUserId
-router.get("/api/users/getUserRegister", async (req, res) => {
+router.post("/api/users/getUserRegister", async (req, res) => {
     try {
         const userRegisterData = req.body;
         const getUserId = userRegisterData.userId;

@@ -49,7 +49,7 @@ router.post("/api/companyregister/CompanyUserLogin", async (req, res) => {
     }
 });
 
-router.get("/api/companyregister/getAllCompanyUser", async (req, res) => {
+router.post("/api/companyregister/getAllCompanyUser", async (req, res) => {
     try {
         const findAllCompanyUsers = await companyUserRegister.find({});
         if (findAllCompanyUsers) {
@@ -62,7 +62,7 @@ router.get("/api/companyregister/getAllCompanyUser", async (req, res) => {
     }
 });
 
-router.get("/api/companyregister/getCompanyUserId", async (req, res) => {
+router.post("/api/companyregister/getCompanyUserId", async (req, res) => {
     try {
         const companyData = req.body; 
         const getCompanyUserId = companyData.companyUserId;
