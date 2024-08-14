@@ -63,7 +63,7 @@ router.post("/api/users/userLogin", async (req, res) => {
                 return res.status(400).json({ success: true, message: "Please Check The Activation Key!" });
             } else {
                 const token = jwt.sign({ email: getUserEmail }, "your_jwt_secret");
-                return res.status(200).json({ success: true, message: "User Login Successfully!", token: token });
+                return res.status(200).json({ success: true, message: "User Login Successfully!", activationKey: findActivationKey.activationKey, token: token });
             }
         } else if (findUserLogin.isFirstLogin === false) {
             const randomKey = crypto.randomBytes(16).toString('hex');
