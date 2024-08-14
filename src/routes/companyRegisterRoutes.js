@@ -23,7 +23,6 @@ router.post("/api/companyregister/addCompanyUser", async (req, res) => {
             let randomSixDigit = getRandomSixDigit();
             const generateId = companyName.concat(randomSixDigit);
             companyData["companyUserId"] = generateId;
-            console.log(companyData);
             const createCompany = await companyUserRegister.create(companyData);
             return res.status(200).json({ success: true, message: "Company User Account Created Successfully!", companyUserId: createCompany.companyUserId });          
         }
