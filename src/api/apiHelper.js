@@ -3,7 +3,7 @@ import userRoutes from "../routes/userRouter.js";
 import productItemRoutes from "../routes/productItemsRoutes.js";
 import accountRoutes from "../routes/accountRoutes.js";
 import companyRegisterRoutes from "../routes/companyRegisterRoutes.js";
-import birhtdayRemainderRoutes from "../routes/birthdayRemainderRoutes.js"
+import birthdayRemainderRoutes from "../routes/birthdayRemainderRoutes.js"
 import salesRoutes from "../routes/salesRoutes.js";
 import dotenv from "dotenv";
 dotenv.config();
@@ -21,6 +21,6 @@ export const apiHelper = (app) => {
     app.use(productItemRoutes);
     app.use(accountRoutes);
     app.use(companyRegisterRoutes);
-    app.use(birhtdayRemainderRoutes)
+    app.use(birthdayRemainderRoutes);
     app.use(salesRoutes);
 };
