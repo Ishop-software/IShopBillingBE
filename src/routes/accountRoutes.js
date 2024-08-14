@@ -1,10 +1,16 @@
 import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import Twilio from 'twilio/lib/rest/Twilio.js';
+import XLSX from 'xlsx';
+import multer from 'multer';
+import { Parser,parse } from 'json2csv';
+import fs from 'fs';
+import path from 'path';
 import { accountDetails } from '../models/AccountDetailsModel.js';
 import { createMongoDump } from '../utils/helper.js';
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/api/users/createAccount', async ( req, res ) => {
     try {
@@ -105,7 +111,72 @@ router.post('/api/sendingWhatsappMsg', async ( req, res ) => {
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
-})
+});
+
+router.post('/api/importExcelDataInAccount', upload.single('file'), async ( req, res ) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "No file uploaded." });
+        }
+        const accountId = uuidv4();
+        const workBook = XLSX.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workBook.SheetNames[0];
+        const workSheet = XLSX.utils.sheet_to_json(workBook.Sheets[sheetName]);
+
+        const newAccount = workSheet.map( row => ({
+            accountId: accountId,
+            name: row.name,
+            printAs: row.ptintAs,
+            group: row.group,
+            openingBal: row.openingBal,
+            DR_CR: row.DR_CR,
+            taxNo: row.taxNo,
+            Address1: row.Address1,
+            city: row.city,
+            pincode: row.pincode,
+            state: row.state,
+            stateCode: row.stateCode,
+            mobileNo: row.mobileNo,
+            phone: row.phone,
+            email: row.email,
+            contactPerson: row.contactPerson,
+            panCardNo: row.panCardNo
+        }));
+
+        await accountDetails.insertMany(newAccount);
+        
+        return res.status(200).json({ success: true, message: "Successfully imported.." });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+router.post('/api/exportDataIntoExcelInAccount', async ( req, res ) => {
+    try {
+        const exportData = await accountDetails.find();
+        const date = new Date();
+
+        const fields = ['accountId','name','printAs','group','openingBal','DR_CR','taxNo','Address1','city','pincode','state','stateCode','mobileNo','email','contactPerson'];
+        const option = { fields };
+
+        const parser = new Parser(option);
+        const csv = parser.parse(exportData);
+
+        const directory = 'C:/ISHOP';
+        if(!fs.existsSync){
+            fs.mkdirSync(directory, { recursive: true });
+        }
+
+        const location = path.join(directory,`Account-${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}.csv`);
+
+        fs.writeFileSync(location, csv);
+
+        return res.status(200).json({ success: true, message: "Data exported successfully.", path: location });
+
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 router.get('/api/getMongoDump', async ( req, res ) => {
     try {
