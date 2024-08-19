@@ -36,7 +36,17 @@ router.post("/api/productitems/getProductItem", async (req, res) => {
     try {
         const prdouctDataList = req.body;
         const getProductId =  prdouctDataList.productItemId;
-        const findProductId = await ProductItem.findOne({ productItemId: getProductId });
+        const itemName = prdouctDataList.itemName;
+        const HSNCode = prdouctDataList.HSNCode;
+        const companyName = prdouctDataList.companyName;
+        const findProductId = await ProductItem.findOne(
+            { 
+                productItemId: getProductId, 
+                itemName: itemName,
+                HSNCode: HSNCode, 
+                company: companyName
+            },{_id:0,__v:0,createAt:0,updatedAt:0}
+        );
         if (findProductId) {
             return res.status(200).json({ success: true, message: findProductId });
         } else {
@@ -64,11 +74,11 @@ router.put("/api/productitems/updateProductItem", async (req, res) => {
 });
 
 // Delete Product Item
-router.delete("/api/productitems/deleteProductItem", async (req, res) => {
+router.post("/api/productitems/deleteProductItem", async (req, res) => {
     try {
         const prdouctDataList = req.body;
-        const getProductId = prdouctDataList.productItemId; 
-        const delProductItem = await ProductItem.deleteOne({ productItemId: getProductId });
+        const getProductId = prdouctDataList.productItemId;
+        const delProductItem = await ProductItem.findOneAndDelete({ productItemId: getProductId });
         if (delProductItem.deletedCount ===1) {
             return res.status(200).json({ success: true, message: "Product Item Id Deleted Successfully!" })
         } else {

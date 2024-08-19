@@ -6,7 +6,9 @@ import multer from 'multer';
 import { Parser,parse } from 'json2csv';
 import fs from 'fs';
 import path from 'path';
+import mysql from 'mysql2/promise'
 import { accountDetails } from '../models/AccountDetailsModel.js';
+import { User } from '../models/UserModel.js';
 import { createMongoDump } from '../utils/helper.js';
 
 const router = express.Router();
@@ -118,30 +120,32 @@ router.post('/api/importExcelDataInAccount', upload.single('file'), async ( req,
         if (!req.file) {
             return res.status(400).json({ success: false, message: "No file uploaded." });
         }
-        const accountId = uuidv4();
         const workBook = XLSX.read(req.file.buffer, { type: 'buffer' });
         const sheetName = workBook.SheetNames[0];
         const workSheet = XLSX.utils.sheet_to_json(workBook.Sheets[sheetName]);
 
-        const newAccount = workSheet.map( row => ({
-            accountId: accountId,
-            name: row.name,
-            printAs: row.ptintAs,
-            group: row.group,
-            openingBal: row.openingBal,
-            DR_CR: row.DR_CR,
-            taxNo: row.taxNo,
-            Address1: row.Address1,
-            city: row.city,
-            pincode: row.pincode,
-            state: row.state,
-            stateCode: row.stateCode,
-            mobileNo: row.mobileNo,
-            phone: row.phone,
-            email: row.email,
-            contactPerson: row.contactPerson,
-            panCardNo: row.panCardNo
-        }));
+        const newAccount = workSheet.map( row => {
+            const accountId = uuidv4();
+            return {
+                accountId: accountId,
+                name: row.name,
+                printAs: row.ptintAs,
+                group: row.group,
+                openingBal: row.openingBal,
+                DR_CR: row.DR_CR,
+                taxNo: row.taxNo,
+                Address1: row.Address1,
+                city: row.city,
+                pincode: row.pincode,
+                state: row.state,
+                stateCode: row.stateCode,
+                mobileNo: row.mobileNo,
+                phone: row.phone,
+                email: row.email,
+                contactPerson: row.contactPerson,
+                panCardNo: row.panCardNo
+            }
+        });
 
         await accountDetails.insertMany(newAccount);
         
@@ -162,8 +166,8 @@ router.post('/api/exportDataIntoExcelInAccount', async ( req, res ) => {
         const parser = new Parser(option);
         const csv = parser.parse(exportData);
 
-        const directory = 'C:/ISHOP';
-        if(!fs.existsSync){
+        const directory = 'C:/ISHOP/AccountExports';
+        if(!fs.existsSync(directory)){
             fs.mkdirSync(directory, { recursive: true });
         }
 
@@ -186,6 +190,47 @@ router.get('/api/getMongoDump', async ( req, res ) => {
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
     }
-})
+});
+
+router.post('/api/mongoDBToSql', async ( req, res ) => {
+    const sqlConnection = {
+        host: 'localhost',
+        user: 'root',
+        password: '@Hitzz158',
+        database: 'dummyDatabase'
+    };
+    try {
+        const collection = User;
+        const date = new Date();
+        const accountData = await collection.find({},{_id:0,__v:0});
+        console.log(accountData)
+
+        const mysqlConnection = await mysql.createConnection(sqlConnection);
+        const sqlPromises = accountData.map( async (doc) => {
+            const keys = Object.keys(doc).map( keys => `${keys}`).join(', ');
+            const values = Object.values(doc).map( values => {
+                if ( typeof values === 'string' ) {
+                    return mysqlConnection.escape(values);
+                } else if ( typeof values === 'object' && values !== null ) {
+                    return mysqlConnection.escape(JSON.stringify(values))
+                } else {
+                    return values;
+                }
+            });
+
+            const sql = `INSERT INTO AccountDetail (${keys}) VALUES (${values.join(',')});`;
+
+            return mysqlConnection.execute(sql)
+        });
+        await Promise.all(sqlPromises)
+        console.log(sqlPromises)
+
+        await mysqlConnection.end()
+        .then(message => { return res.status(200).json({ success: true, message: "Data transfered to sql completely." })})
+        .catch(error => { return res.status(404).json({ success: false, message: error.message })});
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 export default router;
