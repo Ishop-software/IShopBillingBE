@@ -79,7 +79,7 @@ router.post("/api/productitems/deleteProductItem", async (req, res) => {
         const prdouctDataList = req.body;
         const getProductId = prdouctDataList.productItemId;
         const delProductItem = await ProductItem.findOneAndDelete({ productItemId: getProductId });
-        if (delProductItem.deletedCount ===1) {
+        if (delProductItem) {
             return res.status(200).json({ success: true, message: "Product Item Id Deleted Successfully!" })
         } else {
             return res.status(404).json({ success: false, message: "Product Item Id Is Not Found!" });
