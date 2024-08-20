@@ -14,6 +14,10 @@ import { createMongoDump } from '../utils/helper.js';
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
+router.get('/api/checkServer', async ( req, res ) => {
+    return res.send("Server is live...");
+})
+
 router.post('/api/users/createAccount', async ( req, res ) => {
     try {
         const data = req.body;
