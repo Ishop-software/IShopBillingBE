@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
+import { generateToken } from "../helper/generateToken.js";
 import { User } from "../models/UserModel.js";
 
 const router = express.Router();
@@ -49,23 +50,23 @@ router.post("/api/users/userLogin", async (req, res) => {
         const getUserEmail = userLoginData.email;
         const getPassword = userLoginData.password;
         const findUserLogin = await User.findOne({ email: getUserEmail });
+        const {userId,password,activationkey,isFirstLogin,name,companyName} = findUserLogin;
         if (!findUserLogin) {
             return res.status(404).json({ success: false, message: "User Not Found!" });
         }
-        const isMatch = await bcrypt.compare(getPassword, findUserLogin.password);
+        const isMatch = await bcrypt.compare(getPassword, password);
         if (!isMatch) {
             return res.status(400).json({ success: false, message: "Password Not Valid!" });
         }
-        const isFirstLogin = findUserLogin;
-        if (findUserLogin.isFirstLogin === true) {
-            const findActivationKey = await User.findOne({ activationKey: findUserLogin.activationKey });
+        if (isFirstLogin === true) {
+            const findActivationKey = await User.findOne({ activationkey: activationkey });
             if (!findActivationKey) {
                 return res.status(400).json({ success: true, message: "Please Check The Activation Key!" });
             } else {
-                const token = jwt.sign({ email: getUserEmail }, "your_jwt_secret");
-                return res.status(200).json({ success: true, message: "User Login Successfully!", activationKey: findActivationKey.activationKey, token: token });
+                const token = generateToken({userId: userId})
+                return res.status(200).json({ success: true, message: "User Login Successfully!", activationKey: findActivationKey.activationkey, token: token });
             }
-        } else if (findUserLogin.isFirstLogin === false) {
+        } else if (isFirstLogin === false) {
             const randomKey = crypto.randomBytes(16).toString('hex');
             findUserLogin["activationkey"] = randomKey;
             findUserLogin["isFirstLogin"] = true;
@@ -80,11 +81,11 @@ router.post("/api/users/userLogin", async (req, res) => {
                 from: process.env.GMAIL_USER,
                 to: process.env.Admin_Email, 
                 subject: 'Your Login Key',
-                text: `Hello ${findUserLogin.name},\n\nHere is your login key: ${randomKey}\n\nPlease keep this key safe.\n\nThank you,\nYour Company Name`,
-                html: `<p>UserName: ${findUserLogin.name},</p>
-                    <p>${findUserLogin.name} Your Activation Key Is: <strong>${randomKey}</strong></p>
+                text: `Hello ${name},\n\nHere is your login key: ${randomKey}\n\nPlease keep this key safe.\n\nThank you,\nYour Company Name`,
+                html: `<p>UserName: ${name},</p>
+                    <p>${name} Your Activation Key Is: <strong>${randomKey}</strong></p>
                     <p>Please keep this key safe.</p>
-                    <p>Your Company Name Is: ${findUserLogin.companyName}</p>`
+                    <p>Your Company Name Is: ${companyName}</p>`
             };
 
             const getEmail = await transporter.sendMail(mailOptions);
