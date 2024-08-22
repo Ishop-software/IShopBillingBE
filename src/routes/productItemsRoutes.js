@@ -8,6 +8,11 @@ const router = express.Router();
 router.post("/api/productitems/addProductItem", async (req, res) => {
     try {
         const prdouctDataList = req.body;
+        const { itemName, company, userId } = req.body;
+        const checkConditions = await ProductItem.findOne({ userId: userId, itemName: itemName, company: company });
+        if (checkConditions) {
+            return res.status(404).json({ success: false, message: "Given item already excist.." });
+        }
         const randomId = uuidv4();
         prdouctDataList["productItemId"] = randomId;
         const CreateProductData = await ProductItem.create(prdouctDataList);
@@ -20,7 +25,8 @@ router.post("/api/productitems/addProductItem", async (req, res) => {
 // Get All Product Item List
 router.post("/api/productitems/getAllProductItems", async (req, res) => {
     try {
-        const findAllProductItems = await ProductItem.find({});
+        const {userId} = req.body;
+        const findAllProductItems = await ProductItem.find({ userId: userId });
         if (findAllProductItems) {
             return res.status(200).json({ success: true, message: findAllProductItems });
         } else {
@@ -34,17 +40,14 @@ router.post("/api/productitems/getAllProductItems", async (req, res) => {
 // Get Product Item
 router.post("/api/productitems/getProductItem", async (req, res) => {
     try {
-        const prdouctDataList = req.body;
-        const getProductId =  prdouctDataList.productItemId;
-        const itemName = prdouctDataList.itemName;
-        const HSNCode = prdouctDataList.HSNCode;
-        const companyName = prdouctDataList.companyName;
+        const { userId, productItemId, itemName, HSNCode, company } = req.body;
         const findProductId = await ProductItem.findOne(
             { 
-                productItemId: getProductId, 
+                userId: userId,
+                productItemId: productItemId, 
                 itemName: itemName,
                 HSNCode: HSNCode, 
-                company: companyName
+                company: company
             },{_id:0,__v:0,createAt:0,updatedAt:0}
         );
         if (findProductId) {
@@ -62,7 +65,8 @@ router.put("/api/productitems/updateProductItem", async (req, res) => {
     try {
         const prdouctDataList = req.body;
         const getProductId = prdouctDataList.productItemId;
-        const updateProduct = await ProductItem.findOneAndUpdate({ productItemId: getProductId }, { $set: prdouctDataList });
+        const userId = prdouctDataList.userId;
+        const updateProduct = await ProductItem.findOneAndUpdate({ productItemId: getProductId, userId: userId }, { $set: prdouctDataList });
         if (updateProduct) {
             return res.status(200).json({ success: true, message: "Product Item Updated Successfully!" });
         } else {
@@ -76,10 +80,9 @@ router.put("/api/productitems/updateProductItem", async (req, res) => {
 // Delete Product Item
 router.post("/api/productitems/deleteProductItem", async (req, res) => {
     try {
-        const prdouctDataList = req.body;
-        const getProductId = prdouctDataList.productItemId;
-        const delProductItem = await ProductItem.findOneAndDelete({ productItemId: getProductId });
-        if (delProductItem) {
+        const { productItemId, userId }= req.body;
+        const delProductItem = await ProductItem.findOneAndDelete({ productItemId: productItemId, userId: userId });
+        if (delProductItem.deletedCount ===1) {
             return res.status(200).json({ success: true, message: "Product Item Id Deleted Successfully!" })
         } else {
             return res.status(404).json({ success: false, message: "Product Item Id Is Not Found!" });
