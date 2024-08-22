@@ -7,10 +7,13 @@ import { getUserIdFromToken } from "../helper/generateToken.js";
 const router = express.Router();
 
 // Add Product Items
-router.post("/api/productitems/addProductItem", async (req, res) => {
+router.post("/api/productitems/addProductItem", authenticate, async (req, res) => {
     try {
+        const token = req.header('Authorization');
+        const userId = getUserIdFromToken(token);
         const prdouctDataList = req.body;
-        const { itemName, company, userId } = req.body;
+        prdouctDataList["userId"] = userId;
+        const { itemName, company} = req.body;
         const checkConditions = await ProductItem.findOne({ userId: userId, itemName: itemName, company: company });
         if (checkConditions) {
             return res.status(404).json({ success: false, message: "Given item already excist.." });
