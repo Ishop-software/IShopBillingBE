@@ -1,6 +1,8 @@
 import express from "express";
 import { v4 as uuidv4 } from 'uuid';
 import { ProductItem } from "../models/ProductItemModel.js";
+import { authenticate } from "../middleware/middleware.js";
+import { getUserIdFromToken } from "../helper/generateToken.js";
 
 const router = express.Router();
 
@@ -23,9 +25,10 @@ router.post("/api/productitems/addProductItem", async (req, res) => {
 });
 
 // Get All Product Item List
-router.post("/api/productitems/getAllProductItems", async (req, res) => {
+router.post("/api/productitems/getAllProductItems", authenticate, async (req, res) => {
     try {
-        const {userId} = req.body;
+        const token = req.header('Authorization');
+        const userId = getUserIdFromToken(token);
         const findAllProductItems = await ProductItem.find({ userId: userId });
         if (findAllProductItems) {
             return res.status(200).json({ success: true, message: findAllProductItems });
@@ -38,9 +41,11 @@ router.post("/api/productitems/getAllProductItems", async (req, res) => {
 });
 
 // Get Product Item
-router.post("/api/productitems/getProductItem", async (req, res) => {
+router.post("/api/productitems/getProductItem", authenticate, async (req, res) => {
     try {
-        const { userId, productItemId, itemName, HSNCode, company } = req.body;
+        const token = req.header('Authorization');
+        const userId = getUserIdFromToken(token);
+        const { productItemId, itemName, HSNCode, company } = req.body;
         const findProductId = await ProductItem.findOne(
             { 
                 userId: userId,
@@ -53,7 +58,7 @@ router.post("/api/productitems/getProductItem", async (req, res) => {
         if (findProductId) {
             return res.status(200).json({ success: true, message: findProductId });
         } else {
-            return res.status(404).json({ success: true, message: "Product Item Data Id Is Not Found!" });
+            return res.status(404).json({ success: true, message: "Product Data Not Found!" });
         }
     } catch (error) {
         return res.status(500).json({ success: false, message: "Internal Server Error!" });
@@ -61,11 +66,12 @@ router.post("/api/productitems/getProductItem", async (req, res) => {
 });
 
 // Update Product Item 
-router.put("/api/productitems/updateProductItem", async (req, res) => {
+router.put("/api/productitems/updateProductItem", authenticate, async (req, res) => {
     try {
+        const token = req.header('Authorization');
+        const userId = getUserIdFromToken(token);
         const prdouctDataList = req.body;
         const getProductId = prdouctDataList.productItemId;
-        const userId = prdouctDataList.userId;
         const updateProduct = await ProductItem.findOneAndUpdate({ productItemId: getProductId, userId: userId }, { $set: prdouctDataList });
         if (updateProduct) {
             return res.status(200).json({ success: true, message: "Product Item Updated Successfully!" });
@@ -78,11 +84,13 @@ router.put("/api/productitems/updateProductItem", async (req, res) => {
 });
 
 // Delete Product Item
-router.post("/api/productitems/deleteProductItem", async (req, res) => {
+router.post("/api/productitems/deleteProductItem", authenticate, async (req, res) => {
     try {
-        const { productItemId, userId }= req.body;
+        const token = req.header('Authorization');
+        const userId = getUserIdFromToken(token);
+        const { productItemId }= req.body;
         const delProductItem = await ProductItem.findOneAndDelete({ productItemId: productItemId, userId: userId });
-        if (delProductItem.deletedCount ===1) {
+        if (delProductItem) {
             return res.status(200).json({ success: true, message: "Product Item Id Deleted Successfully!" })
         } else {
             return res.status(404).json({ success: false, message: "Product Item Id Is Not Found!" });
