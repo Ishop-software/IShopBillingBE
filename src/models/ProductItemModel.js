@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 export const ProductItem = mongoose.model("ProductItemData", new Schema ({
+    userId: String,
     productItemId: String,
     itemName: { type: String, required: true },
     shortName: String,
