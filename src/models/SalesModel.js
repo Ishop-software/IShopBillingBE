@@ -18,7 +18,7 @@ export const salesRegister = mongoose.model("salesRegisterData", new Schema({
     taxAmount: Number,
     discs: Number,
     netValue: Number,
-    otherCharges: Number,
+    otherCharges: String,
     remarks: String,  
     onValue: Number,  
     at: String, 
