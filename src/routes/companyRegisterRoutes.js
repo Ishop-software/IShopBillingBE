@@ -8,7 +8,7 @@ router.post("/api/companyregister/addCompanyUser", async (req, res) => {
         const companyData = req.body;
         const findCompanyEmail = await companyUserRegister.findOne({ email: companyData.email });
         const findCompanyMobile = await companyUserRegister.findOne({ mobileNo: companyData.mobileNo });
-        const findCompanyName = await companyUserRegister.findOne({ name: companyData.enter_a_name_of_company });
+        const findCompanyName = await companyUserRegister.findOne({ name: companyData.companyName });
         if (findCompanyEmail) {
             return res.status(400).json({ success: false, message: "Email Already Exists!" });
         } else if (findCompanyMobile) {
