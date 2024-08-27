@@ -5,6 +5,7 @@ import accountRoutes from "../routes/accountRoutes.js";
 import companyRegisterRoutes from "../routes/companyRegisterRoutes.js";
 import birthdayRemainderRoutes from "../routes/birthdayRemainderRoutes.js"
 import salesRoutes from "../routes/salesRoutes.js";
+import purchaseRoutes from "../routes/purchaseRoutes.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -23,4 +24,5 @@ export const apiHelper = (app) => {
     app.use(companyRegisterRoutes);
     app.use(birthdayRemainderRoutes);
     app.use(salesRoutes);
+    app.use(purchaseRoutes);
 };

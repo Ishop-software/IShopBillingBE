@@ -7,8 +7,8 @@ const router = express.Router();
 router.post("/api/usersales/addSalesRegister", async (req, res) => {
     try {
         const salesRegisterData = req.body;
-        const findSalRegId = uuidv4();
-        salesRegisterData["saleRegId"] = findSalRegId;
+        const findSaleRegId = uuidv4();
+        salesRegisterData["saleRegId"] = findSaleRegId;
         const createSalesData = await salesRegister.create(salesRegisterData);
         return res.status(200).json({ success: true, message: "Sales Register Data Added Successfully!", saleRegId: createSalesData.saleRegId });
     } catch (error) {
