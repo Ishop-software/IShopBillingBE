@@ -50,10 +50,10 @@ router.post("/api/users/userLogin", async (req, res) => {
         const getUserEmail = userLoginData.email;
         const getPassword = userLoginData.password;
         const findUserLogin = await User.findOne({ email: getUserEmail });
-        const {userId,password,activationkey,isFirstLogin,name,companyName} = findUserLogin;
         if (!findUserLogin) {
             return res.status(404).json({ success: false, message: "User Not Found!" });
         }
+        const {userId,password,activationkey,isFirstLogin,name,companyName} = findUserLogin;
         const isMatch = await bcrypt.compare(getPassword, password);
         if (!isMatch) {
             return res.status(400).json({ success: false, message: "Password Not Valid!" });
