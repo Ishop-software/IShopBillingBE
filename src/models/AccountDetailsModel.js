@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 export const accountDetails = mongoose.model("AccountDetails",new Schema({
+    userId: String,
     accountId: String,
     name: String,
     printAs: String,
