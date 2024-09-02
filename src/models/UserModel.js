@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 export const User = mongoose.model("userRegisterData", new Schema ({
   activationkey: String,
-  isFirstLogin: Boolean,
+  isFirstLogined: Boolean,
   companyName: { required: true , type: String },
   userId: String,
   name: { required: true , type: String },
