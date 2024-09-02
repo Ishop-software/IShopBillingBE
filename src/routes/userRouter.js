@@ -92,7 +92,7 @@ router.post("/api/users/userLogin", async (req, res) => {
 
             const getEmail = await transporter.sendMail(mailOptions);
             const createkey = await User.create(findUserLogin);
-            const token = jwt.sign({ email: getUserEmail }, "your_jwt_secret");
+            const token = generateToken({ userId: userId })
             return res.status(200).json({ success: true, message: "Key Activated Successfully!", activationkey: createkey.activationkey, token: token });
         } else {
             return res.status(400).json({ success: false, message: "Error In User Login!" });
