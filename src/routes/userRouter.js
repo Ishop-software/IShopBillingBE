@@ -12,6 +12,8 @@ const router = express.Router();
 router.post("/api/users/userRegister", async (req, res) => {
     try {
         const userRegisterData = req.body;
+        userRegisterData["isFirstLogined"] = false;
+        userRegisterData["activationkey"] = null;
         const findUserEmail = await User.findOne({ email: userRegisterData.email });
         const findUserMobile = await User.findOne({ mobileNo: userRegisterData.mobileNo });
         const findUserName = await User.findOne({ name: userRegisterData.name });
@@ -53,12 +55,12 @@ router.post("/api/users/userLogin", async (req, res) => {
         if (!findUserLogin) {
             return res.status(404).json({ success: false, message: "User Not Found!" });
         }
-        const {userId,password,activationkey,isFirstLogin,name,companyName} = findUserLogin;
+        const {userId,password,activationkey,isFirstLogined,name,companyName} = findUserLogin;
         const isMatch = await bcrypt.compare(getPassword, password);
         if (!isMatch) {
             return res.status(400).json({ success: false, message: "Password Not Valid!" });
         }
-        if (isFirstLogin === true) {
+        if (isFirstLogined === true) {
             const findActivationKey = await User.findOne({ activationkey: activationkey });
             if (!findActivationKey) {
                 return res.status(400).json({ success: true, message: "Please Check The Activation Key!" });
@@ -66,10 +68,10 @@ router.post("/api/users/userLogin", async (req, res) => {
                 const token = generateToken({userId: userId})
                 return res.status(200).json({ success: true, message: "User Login Successfully!", activationKey: findActivationKey.activationkey, token: token });
             }
-        } else if (isFirstLogin === false) {
+        } else if (isFirstLogined === false) {
             const randomKey = crypto.randomBytes(16).toString('hex');
             findUserLogin["activationkey"] = randomKey;
-            findUserLogin["isFirstLogin"] = true;
+            findUserLogin["isFirstLogined"] = true;
             const transporter = nodemailer.createTransport({
                 service: "gmail",
                 auth: {
@@ -96,7 +98,7 @@ router.post("/api/users/userLogin", async (req, res) => {
             return res.status(400).json({ success: false, message: "Error In User Login!" });
         }
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Internal Server Error!" });
+        return res.status(500).json({ success: false, message: error.message });
     }
 });
 
