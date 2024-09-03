@@ -22,7 +22,6 @@ export const authenticate = async (req,res,next) => {
             return res.status(400).json({ success: false, error: "Access-Denied" });
         } else {
             const verified = jwt.verify( token, process.env.SECRET_KEY);
-            console.log(verified.data.userId);
             const checkUser = await User.findOne({ userId: verified.data.userId })
             if (!checkUser) {
                 return res.status(400).json({ success: false, message: "Invalid User" });
