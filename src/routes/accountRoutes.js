@@ -37,35 +37,56 @@ router.post("/api/users/createAccount", authenticate, async (req, res) => {
                 success: false,
                 message: "This mobile number is already registered..",
             });
-        }
+        };
         if (checkEmail) {
             return res.status(404).json({
                 success: false,
                 message: "This email is already registered..",
             });
-        }
+        };
         const createAccount = await accountDetails.create(data);
         if (createAccount) {
-            return res
-                .status(200)
-                .json({ success: true, message: "Account created successfully.." });
+            return res.status(200).json({ 
+                success: true,
+                message: "Account created successfully.." 
+            });
         } else {
-            return res
-                .status(404)
-                .json({ success: false, message: "Account not created.." });
+            return res.status(404).json({ 
+                success: false, 
+                message: "Account wasn't created.." 
+            });
         }
     } catch (error) {
-        return res
-            .status(500)
-            .json({ success: false, message: "Internal Server Error!" });
+        return res.status(500).json({ 
+            success: false, 
+            message: "Internal Server Error!" 
+        });
     }
 });
 
-router.post("/api/users/getAllAccountDetails", async (req, res) => {
+router.post("/api/users/getAccountDetails", authenticate, async (req, res) => {
     try {
+        const token = req.header('Authorization');
+        const userId = getUserIdFromToken(token);
+        const {accountId} = req.body;
+        const getAccountDetails = await accountDetails.findOne({ userId: userId, accountId: accountId },{__v:0, _id:0, createdAt:0, updatedAt:0});
+        if (getAccountDetails) {
+            return res.status(200).json({ success: true, data: getAccountDetails });
+        } else {
+            return res.status(500).json({ success: false, message: "Can't find account data for this user.." });    
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+router.post("/api/users/getAllAccountDetails", authenticate, async (req, res) => {
+    try {
+        const token = req.header('Authorization');
+        const userId = getUserIdFromToken(token);
         const getAllAccountDetails = await accountDetails.find(
-            {},
-            { _id: 0, __v: 0 }
+            { userId: userId },
+            { _id: 0, __v: 0, createdAt:0, updatedAt:0 }
         );
         if (getAllAccountDetails.length === 0) {
             return res.status(404).json({
@@ -84,42 +105,67 @@ router.post("/api/users/getAllAccountDetails", async (req, res) => {
     }
 });
 
-router.put("/api/updateAccountDetails", async (req, res) => {
+router.put("/api/users/updateAccountDetails", authenticate, async (req, res) => {
     try {
+        const token = req.header('Authorization');
+        const userId = getUserIdFromToken(token);
         const data = req.body;
-        const accountId = data.accountId;
+        const { email, mobileNo, accountId } = data;      
+        const checkMail = await accountDetails.findOne({ userId: userId, email: email });
+        const checkMob = await accountDetails.findOne({ userId: userId, mobileNo: mobileNo });
+        if( checkMail && checkMail.accountId !== accountId ) {
+            return res.status(404).json({
+                success: false,
+                message: "This email is already registered..",
+            });
+        }
+        if (checkMob && checkMob.accountId !== accountId ) {
+            return res.status(404).json({
+                success: false,
+                message: "This mobile number is already registered..",
+            });
+        };
         const updateAccountDetails = await accountDetails.findOneAndUpdate(
-            { accountId: accountId },
+            { userId: userId, accountId: accountId },
             { $set: data }
         );
         if (!updateAccountDetails) {
-            return res
-                .status(404)
-                .json({ success: false, message: "data not updated!" });
+            return res.status(404).json({ 
+                success: false, 
+                message: "data not updated!" 
+            });
         } else {
-            return res
-                .status(200)
-                .json({ success: true, message: "data updated successfully!" });
+            return res.status(200).json({ 
+                success: true, 
+                message: "data updated successfully!" 
+            });
         }
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
     }
 });
 
-router.delete("/api/deleteAccountDetails", async (req, res) => {
+router.delete("/api/users/deleteAccountDetails", authenticate, async (req, res) => {
     try {
+        const token = req.header('Authorization');
+        const userId = getUserIdFromToken(token);
         const { accountId } = req.body;
-        const deleteAccountDetails = await accountDetails.findOneAndDelete({
-            accountId: accountId,
-        });
+        const deleteAccountDetails = await accountDetails.findOneAndDelete(
+            { userId: userId, accountId: accountId } 
+        );
         if (!deleteAccountDetails) {
-            return res
-                .status(404)
-                .json({ success: false, message: "data not deleted!" });
+            return res.status(404).json({ 
+                success: false, 
+                message: "data not deleted!" 
+            });
         } else {
-            return res
-                .status(200)
-                .json({ success: true, message: "data deleted successfully!" });
+            return res.status(200).json({ 
+                success: true, 
+                message: "data deleted successfully!" 
+            });
         }
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
