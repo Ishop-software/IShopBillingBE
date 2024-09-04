@@ -25,3 +25,10 @@ export const accountDetails = mongoose.model("AccountDetails",new Schema({
     },
     { timestamps: true }
 ), "AccountDetails");
+
+export const groupAccount = mongoose.model("GroupAccountDetails", new Schema ({
+    groupAccountId: String,
+    search: String,
+    group: String,
+    underGroup: String
+}), "GroupAccountDetails");

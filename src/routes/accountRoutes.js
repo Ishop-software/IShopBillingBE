@@ -8,7 +8,7 @@ import fs from "fs";
 import path from "path";
 import mysql from "mysql2/promise";
 import bcrypt from "bcryptjs";
-import { accountDetails } from "../models/AccountDetailsModel.js";
+import { accountDetails, groupAccount } from "../models/AccountDetailsModel.js";
 import { User } from "../models/UserModel.js";
 import { createMongoDump } from "../utils/helper.js";
 import { authenticate } from "../middleware/middleware.js";
@@ -390,12 +390,78 @@ router.post("/api/mongoDBToSql", async (req, res) => {
     }
 });
 
+// Group Account Creations
 
+router.post("/api/groupaccounts/addGroupAccount", async (req, res) => {
+    try {
+        const groupAccountData = req.body;
+        const createGroupAccId = uuidv4();
+        groupAccountData["groupAccountId"] = createGroupAccId;
+        const newGroupAccount = await groupAccount.create(groupAccountData);
+        if (newGroupAccount) {
+            return res.status(200).json({ success: true, message: "Account Group Data Added Successfully!", groupAccountId: newGroupAccount.groupAccountId });
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Internal Server Error!" });
+    }
+});
 
+router.post("/api/groupaccounts/getAllGroupAccount", async (req, res) => {
+    try {
+        const findAllGroupAccount = await groupAccount.find({});
+        if (findAllGroupAccount) {
+            return res.status(200).json({ success: true, message: findAllGroupAccount });
+        } else {
+            return res.status(404).json({ success: true, message: "Group Account List Is Not Found!" });
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Internal Server Error!" });
+    }
+});
 
+router.post("/api/groupaccounts/getGroupAccountId", async (req, res) => {
+    try {
+        const groupAccountData = req.body; 
+        const getGroupAccountId = groupAccountData.groupAccountId;
+        const findGroupAccountId = await groupAccount.findOne({ groupAccountId: getGroupAccountId });
+        if (findGroupAccountId) {
+            return res.status(200).json({ success: true, message: findGroupAccountId });
+        } else {
+            return res.status(404).json({ success: true, message: "Group Account Id Is Not Found!" });
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Internal Server Error!" });
+    }
+});
 
+router.put("/api/groupaccounts/updateGroupAccountId", async (req, res) => {
+    try {
+        const groupAccountData = req.body;
+        const getGroupAccountId = groupAccountData.groupAccountId;
+        const findUpdateData = await groupAccount.findOneAndUpdate({ groupAccountId: getGroupAccountId }, { $set: groupAccountData });
+        if (findUpdateData) {
+            return res.status(200).json({ success: true, message: "Group Account Data Updated Successfully!" });
+        } else {
+            return res.status(404).json({ success: true, message: "Group Account Data Id Is Not Found!" });
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Internal Server Error!" });
+    }
+});
 
-
-
+router.delete("/api/groupaccounts/deleteGroupAccountId", async (req, res) => {
+    try {
+        const groupAccountData = req.body;
+        const getGroupAccountId = groupAccountData.groupAccountId;
+        const findGroupAccountId = await groupAccount.findOneAndDelete({ groupAccountId: getGroupAccountId });
+        if (findGroupAccountId) {
+            return res.status(200).json({ success: true, message: "Group Account Data Id Deleted Successfully!" });
+        } else {
+            return res.status(404).json({ success: true, message: "Group Account Data Id Is Not Found!" });
+        }
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Internal Server Error!" });
+    }
+});
 
 export default router;
