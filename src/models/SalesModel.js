@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 export const salesRegister = mongoose.model("salesRegisterData", new Schema({
+    userId: String,
     saleRegId: String,
     partyName: String,
     billNo: Number,
