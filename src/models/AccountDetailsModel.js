@@ -28,7 +28,7 @@ export const accountDetails = mongoose.model("AccountDetails",new Schema({
 
 export const groupAccount = mongoose.model("GroupAccountDetails", new Schema ({
     groupAccountId: String,
-    search: String,
+    primaryGroup: String,
     group: String,
     underGroup: String
 }), "GroupAccountDetails");
