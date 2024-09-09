@@ -13,6 +13,7 @@ import { User } from "../models/UserModel.js";
 import { createMongoDump } from "../utils/helper.js";
 import { authenticate } from "../middleware/middleware.js";
 import { getUserIdFromToken } from "../helper/generateToken.js";
+import { Account } from "../models/AccountDetailsModel.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -226,9 +227,10 @@ router.post(
     async (req, res) => {
         try {
             if (!req.file) {
-                return res
-                    .status(400)
-                    .json({ success: false, message: "No file uploaded." });
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "No file uploaded." 
+                });
             }
             const workBook = XLSX.read(req.file.buffer, { type: "buffer" });
             const sheetName = workBook.SheetNames[0];
@@ -259,9 +261,10 @@ router.post(
 
             await accountDetails.insertMany(newAccount);
 
-            return res
-                .status(200)
-                .json({ success: true, message: "Successfully imported.." });
+            return res.status(200).json({ 
+                success: true, 
+                message: "Successfully imported.." 
+            });
         } catch (error) {
             return res.status(500).json({ success: false, message: error.message });
         }
@@ -465,3 +468,95 @@ router.delete("/api/groupaccounts/deleteGroupAccountId", async (req, res) => {
 });
 
 export default router;
+
+//For NEW ACCOUNT
+
+router.post("/api/importNewData", authenticate, upload.single("file"), async (req, res) => {
+    try {
+        const token = req.header('Authorization');
+        const userId = getUserIdFromToken(token);
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "No file Uploaded."
+            });
+        }
+        const workBook = XLSX.read(req.file.buffer, { type: "buffer" });
+        const sheetName = workBook.SheetNames[0];
+        const workSheet = XLSX.utils.sheet_to_json(workBook.Sheets[sheetName]);
+        
+        const newAccount = workSheet.map((row) => {
+            const accountId = uuidv4();
+            return {
+                userId: userId,
+                AccountId: accountId,
+                GroupName: row.GroupName ? row.GroupName : null ,
+                AccountName: row.AccountName ? row.AccountName : null ,
+                OpBal: row.OpBal ? row.OpBal : null ,
+                Dr_Cr: row.Dr_Cr ? row.Dr_Cr : null ,
+                AddressLine1: row.AddressLine1 ? row.AddressLine1 : null ,
+                AddressLine2: row.AddressLine2 ? row.AddressLine2 : null ,
+                City: row.City ? row.City : null ,
+                State: row.State ? row.State : null ,
+                Phone: row.Phone ? row.Phone : null ,
+                Mobile: row.Mobile ? row.Mobile : null ,
+                Email: row.Email ? row.Email : null ,
+                ContactPerson: row.ContactPerson ? row.ContactPerson : null ,
+                Birthday: row.Birthday ? row.Birthday : null ,
+                Anniversary: row.Anniversary ? row.Anniversary : null ,
+                BankName: row.BankName ? row.BankName : null ,
+                BankAccountNo: row.BankAccountNo ? row.BankAccountNo : null ,
+                ChequePricingName: row.ChequePricingName ? row.ChequePricingName : null ,
+                PartyType: row.PartyType ? row.PartyType : null ,
+                VAT_NO: row.VAT_NO ? row.VAT_NO : null ,
+                CST_NO: row.CST_NO ? row.CST_NO : null ,
+                ITPAN: row.ITPAN ? row.ITPAN : null ,
+                DL_No1: row.DL_No1 ? row.DL_No1 : null ,
+                DL_NO2: row.DL_NO2 ? row.DL_NO2 : null ,
+                BillByBill: row.BillByBill ? row.BillByBill : null ,
+                CreditLimit: row.CreditLimit ? row.CreditLimit : null ,
+                BillLimit: row.BillLimit ? row.BillLimit : null ,
+                CreditDaysSale: row.CreditDaysSale ? row.CreditDaysSale : null ,
+                CreditDaysPurchase: row.CreditDaysPurchase ? row.CreditDaysPurchase : null ,
+                AdditionalField1: row.AdditionalField1 ? row.AdditionalField1 : null ,
+                AdditionalField2: row.AdditionalField2 ? row.AdditionalField2 : null ,
+                AdditionalField3: row.AdditionalField3 ? row.AdditionalField3 : null ,
+                AdditionalField4: row.AdditionalField4 ? row.AdditionalField4 : null ,
+                AdditionalField5: row.AdditionalField5 ? row.AdditionalField5 : null ,
+                AdditionalField6: row.AdditionalField6 ? row.AdditionalField6 : null ,
+                AdditionalField7: row.AdditionalField7 ? row.AdditionalField7 : null ,
+                AdditionalField8: row.AdditionalField8 ? row.AdditionalField8 : null ,
+                AdditionalField9: row.AdditionalField9 ? row.AdditionalField9 : null ,
+                AdditionalField10: row.AdditionalField10 ? row.AdditionalField10 : null ,
+                PrintName: row.PrintName ? row.PrintName : null ,
+                GSTNo: row.GSTNo ? row.GSTNo : null ,
+                UCardNo: row.UCardNo ? row.UCardNo : null ,
+                MyOpBal: row.MyOpBal ? row.MyOpBal : null ,
+                My_D_C: row.My_D_C ? row.My_D_C : null ,
+                AadharNo: row.AadharNo ? row.AadharNo : null ,
+                StateCode: row.StateCode ? row.StateCode : null ,
+                Pincode: row.Pincode ? row.Pincode : null ,
+                AccountID: row.AccountID ? row.AccountID : null 
+            }
+        });
+        console.log(newAccount);
+
+        const insertDatas = await Account.insertMany(newAccount);
+        if(!insertDatas) {
+            return res.status(400).json({
+                success: false,
+                message: "Error in importing data into DB."
+            });
+        } else {
+            return res.status(200).json({
+                success: true,
+                message: "Successfully imported.."
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+});
