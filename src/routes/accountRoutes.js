@@ -539,7 +539,6 @@ router.post("/api/importNewData", authenticate, upload.single("file"), async (re
                 AccountID: row.AccountID ? row.AccountID : null 
             }
         });
-        console.log(newAccount);
 
         const insertDatas = await Account.insertMany(newAccount);
         if(!insertDatas) {
