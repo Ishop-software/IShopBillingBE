@@ -7,6 +7,8 @@ import birthdayRemainderRoutes from "../routes/birthdayRemainderRoutes.js"
 import salesRoutes from "../routes/salesRoutes.js";
 import chargesRoutes from "../routes/chargesRoutes.js";
 import purchaseRoutes from "../routes/purchaseRoutes.js";
+import paymentRoutes from '../routes/paymentOptionRoutes.js';
+import posRoutes from '../routes/posRoutes.js';
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -27,4 +29,6 @@ export const apiHelper = (app) => {
     app.use(salesRoutes);
     app.use(purchaseRoutes);
     app.use(chargesRoutes);
+    app.use(paymentRoutes);
+    app.use(posRoutes)
 };
